@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-@author: jnb19
+@author: jbrown888
 8/6/24
 #cwd = D:\\j_Documents\\cliimbing\\
+# testing appending to attempts data file
+# see write_to_climbs_file.py for trial and error process in appending
 """
 
-# appending to attempts_df.csv file
-# see write_to_climbs_file.py for trial and error process in appending
 import pandas as pd
 import numpy as np
 import datetime as dt
