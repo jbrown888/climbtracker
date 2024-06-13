@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-@author: jnb19
+@author: jbrown888
 8/6/24
 #cwd = D:\\j_Documents\\cliimbing\\climbtracker
+# working and tested functions for adding to climbs data file
 """
 
 # appending climb_df file
