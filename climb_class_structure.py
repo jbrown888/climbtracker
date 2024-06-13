@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-@author: jnb19
+@author: jbrown888
+Initial setup, creating a Class of route objects that take attempt data as attributes.
+Became quickly clear that this was unnecessary as only interested in aggregate data, no methods or functions applied to climb objects
 """
 import datetime as dt
 
