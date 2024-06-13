@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-@author: jnb19
+@author: jbrown888
+# background figure functions for optimising plot appearance
 """
 import numpy as np
 # import scipy as sp
