@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 @author: jbrown888
-7/6/24
-#cwd = D:\\j_Documents\\cliimbing\\
-# see initial_df_setup_testing.py for process, and explanations/tips on pandas
-# Generating sample data of climbs and attempts in a pandas dataframe - INPUT
-# initial phases
 """
+
+# Generate sample data of climbs and attempts in a pandas dataframe - initial testing
+# also notes about how to use pandas and tips/explanations
+
 
 
 import pandas as pd
