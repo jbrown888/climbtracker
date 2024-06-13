@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-@author: jnb19
+@author: jbrown888
 7/6/24
 #cwd = D:\\j_Documents\\cliimbing\\
-"""
-
 # see initial_df_setup_testing.py for process, and explanations/tips on pandas
+# Generating sample data of climbs and attempts in a pandas dataframe - INPUT
+# initial phases
+"""
 
 import pandas as pd
 import numpy as np
