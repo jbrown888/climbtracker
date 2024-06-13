@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-@author: jnb19
+@author: jbrown888
 10/6/24
 #cwd = D:\\j_Documents\\cliimbing\\
-"""
-
 # working on selecting groups of climbs based on multiple criteria
 # for all possibilities
+"""
+
+
 
 import pandas as pd
 import numpy as np
