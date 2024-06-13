@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-@author: jnb19
+@author: jbrown888
 7/6/24
 #cwd = D:\\j_Documents\\cliimbing\\
+# generate random sample climb data, full options
+# generate_save_data.py previous testing file
 """
 
-# generate random sample climb data
-# generate_save_data.py previous testing file
 
 import pandas as pd
 import numpy as np
