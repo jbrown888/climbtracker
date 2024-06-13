@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: jnb19
+@author: jbrown888
 """
 
 # Generate sample data of climbs and attempts in a pandas dataframe
