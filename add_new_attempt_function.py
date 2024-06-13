@@ -3,7 +3,9 @@
 @author: jnb19
 8/6/24
 #cwd = D:\\j_Documents\\cliimbing\\climbtracker
+# working and tested functions for adding to attempts data file
 """
+
 
 # appending climb_df file
 import datetime as dt
