@@ -100,7 +100,7 @@ def get_equivalent_grades(grades):
      The function uses regular expressions to match the grade format.
      It then adds equivalent grades to the result list based on the matching format.
      """
-     if type(grades) is not list:
+     if not isinstance(grades, list):
           raise TypeError(f'Expected list of strings of grades, got {type(grades)}')
      equiv_grades = []
      for g in grades:
@@ -134,7 +134,7 @@ def append_equivalent_grades(grades):
      It then adds equivalent grades to the original list based on the matching format.
      A deep copy of the input list is iterated over.
      """
-     if type(grades) is not list:
+     if not isinstance(grades, list):
           raise TypeError(f'Expected list of strings of grades, got {type(grades)}')
      gs = copy.deepcopy(grades)
      for g in gs: # ensure don't end up in endless loop of adding grades to original list
@@ -205,7 +205,7 @@ def add_new_climb_to_file(filepath, newclimb_data):
      The function reads the last line of the file to get the previous climb_id and increments it to generate the new climb_id.
      The new climb data is then appended to the file using the csv.DictWriter.
      """
-     if type(newclimb_data) is not dict:
+     if not isinstance(newclimb_data, dict):
           raise TypeError(f'Expected dict of climb data, got {type(newclimb_data)}')
      if not all([x in newclimb_data for x in climb_file_columns[1:]]):
           raise KeyError(f'Expected dict of climb data with keys {climb_file_columns[1:]}, got {newclimb_data.keys()}')

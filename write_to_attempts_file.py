@@ -165,7 +165,7 @@ newattempts_data = {'climb_id': [33,22,1],
 
 
 
-if type(newattempts_data) is not dict:
+if not isinstance(newattempts_data, dict):
     raise TypeError(f'Expected dict of attempt data, got {type(newattempts_data)}')
 if not all([x in newattempts_data.keys() for x in attempt_file_columns]):
     raise KeyError(f'Expected dict of attempt data with keys {attempt_file_columns[1:]}, got {newattempts_data.keys()}')
