@@ -17,20 +17,22 @@ import copy
 # CLIMB INFORMATION #################################################################
 
 # IMPORTANT! Titles of columns in climb data file
-climb_file_columns = ['climb_id','climb_style', 'grade', 'door', 'location', 'rope', 'climb_name', 'angle', 'mbyear','hold', 'wall', 'skill', 'notes']
+climb_file_columns = ['climb_id','climb_style', 'grade', 'door', 'location', 'rope', 'climb_name', 'angle', 'mbyear','rock_type','hold', 'wall', 'skill', 'notes']
 
 # Possible climb attributes
 climb_styles = ['bouldering', 'sport', 'moonboard']
 grades = [] # any string that matches the regex options
-doors = ['indoor', 'outdoor']
+doors = ['indoor', 'outdoor', 'moonboard']
 locations = [] # any string eg 'Rockover', 'Summit Up', 'Curbar Edge', 'Devils Gorge', 'Burbage'
 ropes = ['lead', 'toprope', 'autobelay', 'trad']
 climb_names = [] # any string, may include numbers
 angles = ['25deg', '40deg'] # integers, for moonboard angles
-mbyears = ['2016', '2017', '2019'] # moonboard year - 4digit str 0000
+mbyears = ['2016', '2017', '2019', '2024'] # moonboard year - 4digit str 0000
 holds = ['compression', 'crimps', 'crack', 'features', 'jug', 'pinch', 'pocket', 'sidepull', 'sloper', 'undercling', 'volume']
 walls = ['arete', 'barrel', 'chimney', 'corner', 'overhang', 'roof', 'slab', 'step', 'topout', 'traverse', 'vert']
 skills = ['dyno', 'finger', 'power', 'reachy', 'sustained', 'technical', 'balance', 'co-ordination', 'paddle']
+rock_types = ['limestone', 'granite', 'sandstone', 'gritstone']
+
 
 # https://pythex.org/
 Vgrades_regex_pattern = r'^V([0-9]|[1-9][0-9]|B)[+]?$'
@@ -122,6 +124,7 @@ def append_equivalent_grades(grades):
      """
      This function takes a list of climbing grades in either V-grade or font-grade format,
      and appends equivalent grades in the other format to the original list in-place.
+     it does NOT accept range grades - these must be converted first
 
      Parameters:
      grades (list): A list of strings representing climbing grades. 
@@ -350,7 +353,7 @@ def add_new_attempts_to_file(filepath, newattempts_data, num_attempts):
             dictwriter = csv.DictWriter(file, fieldnames=attempt_file_columns, restval = '', extrasaction = 'raise') 
             for attempt in indiv_attempts:
                 dictwriter.writerow(attempt)
-        print("New lines appended successfully to {filepath}.")
+        print(f"New lines appended successfully to {filepath}.")
     except Exception as e:
         print(f"Error appending new line to {filepath}: {str(e)}")
 
@@ -413,7 +416,7 @@ def add_N_failed_attempts_on_one_climb_same_date(filepath, climb_id, attempt_dat
             dictwriter = csv.DictWriter(file, fieldnames=attempt_file_columns, restval = '', extrasaction = 'raise') 
             for i in range(num_attempts):
                 dictwriter.writerow(newattempt_data)
-        print("New lines appended successfully to {filepath}.")
+        print(f"New lines appended successfully to {filepath}.")
     except Exception as e:
         print(f"Error appending new line to {filepath}: {str(e)}")
 
@@ -478,7 +481,7 @@ def add_N_attempts_send_final_try_on_one_climb_same_date(filepath, climb_id, att
                 dictwriter.writerow(newattempt_data)
             newattempt_data['success'] = True # send/success on final try
             dictwriter.writerow(newattempt_data)
-        print("New lines appended successfully to {filepath}.")
+        print(f"New lines appended successfully to {filepath}.")
     except Exception as e:
         print(f"Error appending new line to {filepath}: {str(e)}")
 
