@@ -23,13 +23,15 @@ doors = ['indoor', 'outdoor']
 ropes = ['lead', 'toprope', 'autobelay', 'trad']
 # climb_names = [] # any string, may include numbers
 angles = ['40deg', '25deg'] # integers, for moonboard angles
-mbyears = ['2016', '2017', '2019'] # moonboard year - 4digit str 0000
+mbyears = ['2016', '2017', '2019', '2024'] # moonboard year - 4digit str 0000
 holds = ['compression', 'crimps', 'crack', 'features', 'jug', 'pinch', 'pocket', 'sidepull', 'sloper', 'undercling', 'volume']
 walls = ['arete', 'barrel', 'chimney', 'corner', 'overhang', 'roof', 'slab', 'step', 'topout', 'traverse', 'vert']
 skills = ['dyno', 'finger', 'power', 'reachy', 'sustained', 'technical', 'balance', 'co-ordination', 'paddle']
 font_grades_letters = ['a','b','c', 'a+', 'b+', 'c+']
 gymlocations = ['Rockover', 'Summit Up', 'Big Depot', 'Parthian']
 craglocations = ['Curbar Edge', 'Devils Gorge', 'Burbage']
+rock_types = ['limestone', 'granite', 'sandstone', 'gritstone']
+
 
 num_climbs = 100
 climb_data = {
@@ -45,6 +47,7 @@ doors_ = np.empty((num_climbs), dtype='<U10')
 ropes_ = np.empty((num_climbs), dtype='<U10')
 angles_ = np.empty((num_climbs), dtype='<U10')
 mbyears_ = np.empty((num_climbs), dtype='<U10')
+rock_types_= np.empty((num_climbs), dtype='<U64')
 
 # decide further values dep on climbstyle
 for i, climbstyle in enumerate(climb_data['climb_style']): 
@@ -57,6 +60,7 @@ for i, climbstyle in enumerate(climb_data['climb_style']):
             # indoor bouldering
             locations_[i] = np.random.choice(gymlocations, 1)[0]
             climb_names_[i] = None
+            rock_types_[i] = None
             if bool(np.random.randint(2)):
                 # start grade B
                 lower_grade = 'B'
@@ -70,6 +74,7 @@ for i, climbstyle in enumerate(climb_data['climb_style']):
             locations_[i] = np.random.choice(craglocations, 1)[0]
             climb_names_[i] = 'some climb name'
             grades_[i] = f'f{str(np.random.randint(3,13)):s}{np.random.choice(font_grades_letters, 1)[0]}'
+            rock_types_[i] = np.random.choice(rock_types, 1)[0]
     elif climbstyle == 'moonboard':
         mbyears_[i] = np.random.choice(mbyears, 1)[0]
         angles_[i] = np.random.choice(angles, 1)[0]
@@ -78,6 +83,7 @@ for i, climbstyle in enumerate(climb_data['climb_style']):
         locations_[i] = np.random.choice(gymlocations, 1)[0]
         grades_[i] = f'V{str(np.random.randint(2,15)):s}'
         climb_names_[i] = 'some climb name'
+        rock_types_[i] = None
     else: # sport style
         mbyears_[i] = None
         angles_[i] = None
@@ -88,11 +94,13 @@ for i, climbstyle in enumerate(climb_data['climb_style']):
             locations_[i] = np.random.choice(gymlocations, 1)[0]
             ropes_[i] = np.random.choice(['lead', 'toprope', 'autobelay'], 1)[0]
             climb_names_[i] = None
+            rock_types_[i] = None
         else:
             # outdoor rope
             locations_[i] = np.random.choice(craglocations, 1)[0]
             ropes_[i] = np.random.choice(['lead', 'toprope', 'trad'], 1)[0]
             climb_names_[i] = 'some climb name'
+            rock_types_[i] = np.random.choice(rock_types, 1)[0]
 
 climb_data.update({'grade': grades_,
                    'door': doors_,
@@ -101,6 +109,7 @@ climb_data.update({'grade': grades_,
                    'climb_name': climb_names_,
                    'angle': angles_,
                    'mbyear': mbyears_,
+                   'rock_type': rock_types_,
                    'hold': np.random.choice(holds, num_climbs), 
                    'wall': np.random.choice(walls, num_climbs),
                    'skill': np.random.choice(skills, num_climbs),
