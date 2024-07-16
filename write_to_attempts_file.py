@@ -7,6 +7,7 @@
 # see write_to_climbs_file.py for trial and error process in appending
 """
 
+
 import pandas as pd
 import numpy as np
 import datetime as dt
@@ -280,7 +281,7 @@ try:
             dictwriter.writerow(newattempt_data)
         newattempt_data['success'] = True # send/success on final try
         dictwriter.writerow(newattempt_data)
-    print("New lines appended successfully to {filepath}.")
+    print(f"New lines appended successfully to {filepath}.")
 except Exception as e:
     print(f"Error appending new line to {filepath}: {str(e)}")
 

@@ -4,6 +4,7 @@
 8/6/24
 #cwd = D:\\j_Documents\\cliimbing\\climbtracker
 # working and tested functions for adding to climbs data file
+# superseded by broomcupboard on 24/6/24
 """
 
 # appending climb_df file

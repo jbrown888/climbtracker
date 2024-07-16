@@ -39,6 +39,7 @@ infile_figparams_vscode = {'offsetsize': 20,
     'fc' :'r',
     'linewidth': 2,
     'ticksize': 20,
+    'visible': True
     }
 marker_ok = {'linestyle' : 'None',
  'marker' : 'o',
@@ -111,7 +112,10 @@ def standard_axes_settings(ax, figparams = infile_figparams_vscode):
 
     """
     ax.set_frame_on
-    ax.grid(visible=True, which='major', axis='both', c='grey', ls='-')
+    if figparams['visible']:
+        ax.grid(visible=True, which='major', axis='both', c='grey', ls='-')
+    else:
+        ax.grid(visible=False, which='major', axis='both')
     # ax.grid(b=True, which='minor', axis='both', c='darkgrey', ls = '--', linewidth =2)
     ax.tick_params(axis ='both', which = 'major', direction ='in', labelsize = figparams['ticksize'])
     ax.tick_params(axis ='both', which = 'minor', direction ='in')

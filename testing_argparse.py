@@ -2,9 +2,8 @@
 @author: jbrown888
 8/6/24
 #cwd = D:\\j_Documents\\cliimbing\\climbtracker
-# Working on argparse and command line arguments parsing.
 """
-
+# Working on argparse and command line arguments parsing.
 
 # run directly in terminal: 'python testing_argparse.py --sum 5 6'
 import argparse

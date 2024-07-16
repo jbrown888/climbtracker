@@ -7,8 +7,6 @@
 # for all possibilities
 """
 
-
-
 import pandas as pd
 import numpy as np
 import datetime as dt
@@ -22,9 +20,10 @@ from importlib import reload
 import re
 import add_new_climb_functions
 import copy 
+import broomcupboard as bc
 
-dirpath = os.path.join(os.getcwd(), 'sample_data')
-fname = 'sample_climbs.csv'
+dirpath = os.path.join(os.getcwd(), 'real_data')
+fname = 'climbs_data.csv'
 fpath = os.path.join(dirpath, fname)
 agg_data_fpath = os.path.join(dirpath, 'aggregate_df.csv')
 
@@ -32,21 +31,24 @@ climbs_df = pd.read_csv(fpath, header=0,\
                  index_col=0, dtype=None, engine=None, converters=None,\
                  skipinitialspace=True, skiprows=None, skipfooter=0, nrows=None, na_values=None, keep_default_na=True,\
                  na_filter=True, parse_dates=None, escapechar = '\\', comment='#')
+fill_na_values = {'hold':'', 'wall':'', 'skill':''}
+climbs_df = climbs_df.fillna(value = fill_na_values)
 
-agg_df = pd.read_csv(agg_data_fpath, header=0, index_col=0, dtype=None, engine=None,
-                              converters=None, skipinitialspace=True, skiprows=None, skipfooter=0,
-                              nrows=None, na_values=None, keep_default_na=True, na_filter=True,
-                              parse_dates=['first_attempt_date', 'latest_attempt_date', 'first_send_date'],
-                              date_format='%Y-%m-%d', dayfirst=False, comment='#')
+
+# agg_df = pd.read_csv(agg_data_fpath, header=0, index_col=0, dtype=None, engine=None,
+#                               converters=None, skipinitialspace=True, skiprows=None, skipfooter=0,
+#                               nrows=None, na_values=None, keep_default_na=True, na_filter=True,
+#                               parse_dates=['first_attempt_date', 'latest_attempt_date', 'first_send_date'],
+#                               date_format='%Y-%m-%d', dayfirst=False, comment='#')
 
 #%% 
 # basic selection
 
 dict_select = {
                 'climb_style': ['bouldering'],
-                'grade': ['V3-5'],
-                # 'location': ['Rockover', 'Summit Up', 'Crag 1'],
-                'door': ['indoor'],
+                'grade': ['V3-5', 'V4-6'],
+                'location': ['Rockover', 'Rockover Sharston'],
+                # 'door': ['indoor'],
                }
 # my method
 group = climbs_df.loc[(climbs_df[list(dict_select)].isin(dict_select)).all(axis=1)]
@@ -81,7 +83,10 @@ if len(indices) == 0:
 # third returns list of int.
 # if no matching climbs, first returns empty pd.core.indexes.base.Index object, second and third return empty list
 
-group_agg_data = agg_df.loc[indices]
+# group_agg_data = agg_df.loc[indices]
+
+#THESE ARE FOR RETURNING INDICES!
+#DON'T NEED TO DO THAT ANYMORE - QUICKER TO RETURN DATAFRAME
 
 #%% 
 # grade selection equivalent font and V grades (not including ranges)
@@ -150,3 +155,161 @@ all_grades = [f'V{grade}' for grade in incl_grades]
 
 # check if specified single grade is included in range
 check = g_single in all_grades
+
+#%%
+
+#%%
+
+# dict_select = {'hold': ['volume'], 'skill': ['tension']}
+dict_select = {'grade': ['V3-5'], 'door': ['indoor'], 'climb_style': ['bouldering'],'hold': ['jug', 'crimp'], 'wall': ['overhang']}#, 'hold': ['volume']}
+# for hold, wall, and skill, we want to check if ANY of dict_select[key] are INCLUDED in the hold/wall/skill column for climb
+# not if they match exactly. need to treat this as a separate case.
+
+info_dict = {k:v for k,v in dict_select.items() if k not in ['hold', 'wall', 'skill']}
+info_keys = [*info_dict.keys()]
+
+# INITIAL SORT NOT INCLUDING HOLD, WALL, SKILL
+#mymethod
+if len(info_dict)==0:
+    reduced_climbs_df = climbs_df
+else:
+    reduced_climbs_df = climbs_df.loc[(climbs_df[list(info_dict)].isin(info_dict)).all(axis=1)]
+if len(reduced_climbs_df)==0:
+    print("No climbs matching specified criteria of "+', '.join([f'{key}:{value}' for key, value in info_dict.items()]))
+
+#groupby
+if len(info_dict)==0:
+    reduced_climbs_df = climbs_df
+elif len(info_dict)==1:
+    gg = climbs_df.groupby(info_keys)
+    try:
+        reduced_climbs_df = pd.concat([gg.get_group((x,)) for x in info_dict[info_keys[0]]], axis = 0)
+    except KeyError:
+        print("KeyError - No climbs matching specified criteria of "+', '.join([f'{key}:{value}' for key, value in info_dict.items()]))
+    # separate case as itertools.product returns a tuple as eg ('f6b',), and group keys look like 'f6b' - won't evaluate as not in gg.groups.keys()
+    # in future version of pandas, when grouping with length-1 list-like you will need to pass a length-1 tuple to get_group, ie '(name,)'
+    # this seems a bit of an oversight...
+else:
+    gg = climbs_df.groupby(info_keys)
+    try:
+        reduced_climbs_df = pd.concat([gg.get_group(x) for x in itertools.product(*info_dict.values()) if x in gg.groups.keys()])
+    except ValueError as e:
+        if str(e) != 'No objects to concatenate':
+            raise e
+        else:
+            print("No climbs matching specified criteria of "+', '.join([f'{key}:{value}' for key, value in info_dict.items()]))
+
+# SECOND SORT INCLUDING HOLD, WALL, SKILL TESTING
+# groupby is NOT going to work; we don't want to group into every possible combination of holds. 
+# eg 'compression, sloper', 'compression, sloper, pinch' are separate groups! 
+# we want to group by hold CONTAINING any of 'compression', 'sloper' etc
+
+style_keys = [k for k in ['hold', 'wall', 'skill'] if k in dict_select.keys()]
+
+# Filter climbs_df based on 'hold' column
+filtered_df = climbs_df[climbs_df['hold'].map(lambda x: any(item in x for item in dict_select['hold']))] # works for just column
+# Apply a lambda function to each row of the DataFrame, filter based on all keys in style_keys
+filtered_df_full = climbs_df[climbs_df[style_keys].apply(
+    lambda row: 
+    # Check if all items in dict_select[col] are in row[col] for each column in style_keys
+    all(item in row[col] for col in style_keys for item in dict_select[col]), 
+    axis=1
+)]
+# equivalent to: 
+indexs = []
+for i in range(climbs_df[style_keys].shape[0]):
+    iis = []
+    for col in style_keys:
+        iis.append(all(j in climbs_df[col].iloc[i] for j in dict_select[col]))
+    if all(iis):
+        indexs.append(i)
+        
+filtered_df_full2 = climbs_df[climbs_df[style_keys].apply(
+    lambda row: 
+    # Check if any item in dict_select[col] is not in row[col] for any column in style_keys
+    not any(item not in row[col] for col in style_keys for item in dict_select[col]), 
+    axis=1
+)]
+# more efficient!!
+# OR add columns with true/false masks of hold, wall skill columns and then groupby these?
+
+# faster than apply! just going to use this for now
+cols = list(climbs_df.columns)
+data, index = [], []
+for row in climbs_df.itertuples(index=True):
+    row_dict = {f:v for f,v in zip(cols, row[1:])}
+    data.append((lambda row: 
+    # Check if any item in dict_select[col] is not in row[col] for any column in style_keys
+    not any(item not in row[col] for col in style_keys for item in dict_select[col])
+)(row_dict))
+    index.append(row[0])
+x= pd.Series(data, index=index)
+filtered_df_full3 = climbs_df[x]
+
+#%%
+testdict = {'climb_style': ['bouldering'], 'grade': ['V4-6'], 'door': ['indoor'], 'wall': ['slab']}
+# testdict = {'climb_style': ['sport'], 'grade': ['V4-6'], 'door': ['moonboard'], 'wall': ['slab']}
+
+climbs_df = pd.read_csv(fpath, header=0,\
+            index_col =0, dtype=None, engine=None, converters={'climb_id':int},\
+            skipinitialspace=True, skiprows=None, skipfooter=0, nrows=None, na_values=None, keep_default_na=True,\
+            na_filter=True, parse_dates=None, comment='#')
+fill_na_values = {'hold':'', 'wall':'', 'skill':'', 'notes':'',}
+climbs_df = climbs_df.fillna(value = fill_na_values)
+filtered_climbs_df = bc.get_filtered_climbs(climbs_df, testdict)
+
+dont_always_display_keys = ['climb_style', 'door', 'location', 'rope', 'climb_name', 'angle', 'mbyear', 'rock_type']
+always_display_keys = ['climb_id', 'grade', 'hold', 'wall', 'skill', 'notes']
+
+display_columns = [k for k in bc.climb_file_columns[1:]]
+for k in testdict.keys():
+    if k in dont_always_display_keys:
+        try:
+            display_columns.remove(k)
+        except ValueError:
+            pass
+
+dict_try_to_delete_display_keys = {
+    ('climb_style', 'bouldering'): ['rope'],
+    ('climb_style', 'sport'): ['angle', 'mbyear'],
+    ('door', 'indoor'): ['climb_name', 'angle', 'mbyear', 'rock_type'],
+    ('door', 'outdoor'): ['angle', 'mbyear'],
+    ('door', 'moonboard'): ['rock_type', 'rope'],
+    ('rope') : ['angle', 'mbyear'],
+    ('rock_type'):['angle', 'mbyear', 'door'],
+    ('angle'):['rock_type', 'style', 'door', 'rope'],
+    ('mbyear'):['rock_type', 'style', 'door', 'rope'],
+}
+
+for k in ['climb_style', 'door', 'rope', 'rock_type', 'angle', 'mbyear']:
+    if k in testdict.keys():
+        if k in ['climb_style', 'door']:
+            kk = (k, testdict[k][0])
+        else:
+            kk = (k)
+        for j in dict_try_to_delete_display_keys[kk]:
+            try:
+                display_columns.remove(j)
+            except ValueError:
+                pass
+
+print(testdict)
+print(display_columns)
+print(filtered_climbs_df[display_columns])
+#%%
+import csv
+with open(fpath, "r") as climbsfile:
+    reader = csv.reader(climbsfile, delimiter = ',', )
+    for row in reader:
+        print(','.join(row))
+#%%
+climbs_df = pd.read_csv(fpath, header=0,\
+            index_col =0, dtype=None, engine=None, converters={'climb_id':int},\
+            skipinitialspace=True, skiprows=None, skipfooter=0, nrows=None, na_values=None, keep_default_na=True,\
+            na_filter=True, parse_dates=None, comment='#')
+
+for row in climbs_df.itertuples(index =True, name = None):
+    cid = row[0]
+    style = row[1]
+    grade = row[2]
+    door= row[3]

@@ -16,9 +16,9 @@ import os
 
 np.random.seed(0)
 # Define possible climb styles, grades, doors, and locations
-climb_styles = ['bouldering', 'sport', 'moonboard']
+climb_styles = ['bouldering', 'sport']
 # grades = [] # any string that matches the regex options
-doors = ['indoor', 'outdoor']
+doors = ['indoor', 'outdoor', 'moonboard']
 # locations = [] # any string eg 'Rockover', 'Summit Up', 'Curbar Edge', 'Devils Gorge', 'Burbage'
 ropes = ['lead', 'toprope', 'autobelay', 'trad']
 # climb_names = [] # any string, may include numbers
@@ -52,8 +52,6 @@ rock_types_= np.empty((num_climbs), dtype='<U64')
 # decide further values dep on climbstyle
 for i, climbstyle in enumerate(climb_data['climb_style']): 
     if climbstyle == 'bouldering':
-        mbyears_[i] = None
-        angles_[i] = None
         ropes_[i] = None
         doors_[i] = np.random.choice(doors, 1)[0]
         if doors_[i] == 'indoor':
@@ -61,6 +59,8 @@ for i, climbstyle in enumerate(climb_data['climb_style']):
             locations_[i] = np.random.choice(gymlocations, 1)[0]
             climb_names_[i] = None
             rock_types_[i] = None
+            mbyears_[i] = None
+            angles_[i] = None
             if bool(np.random.randint(2)):
                 # start grade B
                 lower_grade = 'B'
@@ -69,25 +69,27 @@ for i, climbstyle in enumerate(climb_data['climb_style']):
                 lower_grade = np.random.randint(15)
                 upper_grade = lower_grade + np.random.randint(1,4)
             grades_[i] = f'V{str(lower_grade):s}-{str(upper_grade):s}'
-        else:
+        elif doors_[i] == 'outdoor':
             # outdoor bouldering
             locations_[i] = np.random.choice(craglocations, 1)[0]
             climb_names_[i] = 'some climb name'
             grades_[i] = f'f{str(np.random.randint(3,13)):s}{np.random.choice(font_grades_letters, 1)[0]}'
             rock_types_[i] = np.random.choice(rock_types, 1)[0]
-    elif climbstyle == 'moonboard':
-        mbyears_[i] = np.random.choice(mbyears, 1)[0]
-        angles_[i] = np.random.choice(angles, 1)[0]
-        doors_[i] = 'indoor'
-        ropes_[i] = None
-        locations_[i] = np.random.choice(gymlocations, 1)[0]
-        grades_[i] = f'V{str(np.random.randint(2,15)):s}'
-        climb_names_[i] = 'some climb name'
-        rock_types_[i] = None
-    else: # sport style
+            mbyears_[i] = None
+            angles_[i] = None
+        elif doors_[i] == 'moonboard':
+            mbyears_[i] = np.random.choice(mbyears, 1)[0]
+            angles_[i] = np.random.choice(angles, 1)[0]
+            locations_[i] = np.random.choice(gymlocations, 1)[0]
+            grades_[i] = f'V{str(np.random.randint(2,15)):s}'
+            climb_names_[i] = 'some climb name'
+            rock_types_[i] = None
+        else:
+            raise ValueError("Unknown door value")
+    elif climbstyle == 'sport':
         mbyears_[i] = None
         angles_[i] = None
-        doors_[i] = np.random.choice(doors, 1)[0]
+        doors_[i] = np.random.choice(doors[:2], 1)[0]
         grades_[i] = f'f{str(np.random.randint(3,13)):s}{np.random.choice(font_grades_letters, 1)[0]}'
         if doors_[i] == 'indoor':
             # indoor rope
@@ -101,6 +103,9 @@ for i, climbstyle in enumerate(climb_data['climb_style']):
             ropes_[i] = np.random.choice(['lead', 'toprope', 'trad'], 1)[0]
             climb_names_[i] = 'some climb name'
             rock_types_[i] = np.random.choice(rock_types, 1)[0]
+    else:
+        raise ValueError("Unknown climb style")
+
 
 climb_data.update({'grade': grades_,
                    'door': doors_,
