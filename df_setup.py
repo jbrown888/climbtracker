@@ -80,11 +80,11 @@ for x, y in attempts_grouped_climbid:
 # woo! both agree!
 # GroupBy.transform calls the specified function for each column in each group!! so calls it on each series in each group. NOT on each group!!!
 # need apply! not transform!!
-first_sends = attempts_grouped_climbid.apply(lambda x: x[x["success"]==True]['attempt_date'].min() if x["success"].any() else None)
+first_sends = attempts_grouped_climbid.apply(lambda x: x[x["success"]==True]['attempt_date'].min() if x["success"].any() else None, include_groups=False)
 
 # Calculate number of attempts to send
 # complicated as may have attempted and failed at some point AFTER the first send date
-attempts_to_send = attempts_grouped_climbid.apply(lambda x: x[x['attempt_date'] <= x[x['success']==True]['attempt_date'].min()].shape[0] if x['success'].any() else 0)
+attempts_to_send = attempts_grouped_climbid.apply(lambda x: x[x['attempt_date'] <= x[x['success']==True]['attempt_date'].min()].shape[0] if x['success'].any() else 0, include_groups=False)
 # counts number of attempts before first True, including attempts on the same day (so>=1)
 # If no successsful attempts for that climb, returns 0
 # Assumes you don't try again the same day after sending!

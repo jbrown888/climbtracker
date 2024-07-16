@@ -12,6 +12,7 @@ import csv
 import pandas as pd
 import re
 import copy
+import itertools
 
 
 # CLIMB INFORMATION #################################################################
@@ -20,17 +21,19 @@ import copy
 climb_file_columns = ['climb_id','climb_style', 'grade', 'door', 'location', 'rope', 'climb_name', 'angle', 'mbyear','rock_type','hold', 'wall', 'skill', 'notes']
 
 # Possible climb attributes
-climb_styles = ['bouldering', 'sport', 'moonboard']
+climb_styles = ['bouldering', 'sport']
 grades = [] # any string that matches the regex options
 doors = ['indoor', 'outdoor', 'moonboard']
 locations = [] # any string eg 'Rockover', 'Summit Up', 'Curbar Edge', 'Devils Gorge', 'Burbage'
 ropes = ['lead', 'toprope', 'autobelay', 'trad']
+ropes_str = ['Lead', 'Top-rope', 'Auto-belay', 'Trad']
 climb_names = [] # any string, may include numbers
 angles = ['25deg', '40deg'] # integers, for moonboard angles
 mbyears = ['2016', '2017', '2019', '2024'] # moonboard year - 4digit str 0000
-holds = ['compression', 'crimps', 'crack', 'features', 'jug', 'pinch', 'pocket', 'sidepull', 'sloper', 'undercling', 'volume']
+holds = ['compression', 'crimp', 'crack', 'features', 'jug', 'pinch', 'pocket', 'sidepull', 'sloper', 'undercling', 'volume', 'chip', 'pebble', 'slope chip', 'edge']
 walls = ['arete', 'barrel', 'chimney', 'corner', 'overhang', 'roof', 'slab', 'step', 'topout', 'traverse', 'vert']
-skills = ['dyno', 'finger', 'power', 'reachy', 'sustained', 'technical', 'balance', 'co-ordination', 'paddle']
+# skills = ['dyno', 'finger', 'power', 'reachy', 'sustained', 'technical', 'balance', 'co-ordination', 'paddle', 'tension','footwork', 'lock-off', ]
+skills = ['rockover', 'footwork', 'dyno', 'endurance', 'balance', 'tension', 'technical', 'body positioning', 'paddle', 'lock-off', 'power', 'finger', 'mantle', 'sustained', 'topout', 'co-ordination', 'pogo', 'drop knee', 'reachy', 'heel hook', 'high foot', 'reachy', 'knee bar', 'toe hook', 'foot switch', 'compression', 'deadpoint', 'thumbpress', 'arm', 'mobility', 'fear']
 rock_types = ['limestone', 'granite', 'sandstone', 'gritstone']
 
 
@@ -86,6 +89,17 @@ V_to_font = {'VB':['f3'],
              'V15': ['f8c'],
         }
 
+V_ranges_to_average = {'VB-0':['V0'],
+             'V0-2': ['V1'],
+             'V1-3': ['V2'],
+             'V2-4': ['V3'],
+             'V3-5': ['V4'],
+             'V4-6': ['V5'],
+             'V5-7': ['V6'],
+             'V6-8': ['V7'],
+             'V7-8+': ['V8'],
+        }
+
 # Functions to find equivalent grades
 def get_equivalent_grades(grades):
      """
@@ -121,37 +135,44 @@ def get_equivalent_grades(grades):
      return equiv_grades
 
 def append_equivalent_grades(grades):
-     """
-     This function takes a list of climbing grades in either V-grade or font-grade format,
-     and appends equivalent grades in the other format to the original list in-place.
-     it does NOT accept range grades - these must be converted first
+    """
+    This function takes a list of climbing grades in either V-grade or font-grade format,
+    and appends equivalent grades in the other format to the original list in-place.
+    it does NOT accept range grades - these must be converted first
 
-     Parameters:
-     grades (list): A list of strings representing climbing grades. 
-     Each grade should be in either V-grade or font-grade format.
+    Parameters:
+    grades (list): A list of strings representing climbing grades. 
+    Each grade should be in either V-grade or font-grade format.
 
-     Returns:
-     int: 0 if the function executes successfully, otherwise an error code.
+    Returns:
+    int: 0 if the function executes successfully, otherwise an error code.
 
-     Raises:
-     TypeError: If the input grades is not a list.
-     ValueError: If any of the grades are not in either V-grade or font format.
-     Note:
-     The function uses regular expressions to match the grade format.
-     It then adds equivalent grades to the original list based on the matching format.
-     A deep copy of the input list is iterated over.
-     """
-     if not isinstance(grades, list):
-          raise TypeError(f'Expected list of strings of grades, got {type(grades)}')
-     gs = copy.deepcopy(grades)
-     for g in gs: # ensure don't end up in endless loop of adding grades to original list
-          if re.match(Vgrades_regex_pattern, g):
-               grades += V_to_font[g]               
-          elif re.match(font_grades_regex_pattern, g):
-               grades += font_to_V[g]      
-          else:
-               raise ValueError(f'Invalid grade format: {g}')         
-     return 0
+    Raises:
+    TypeError: If the input grades is not a list.
+    ValueError: If any of the grades are not in either V-grade or font format.
+    Note:
+    The function uses regular expressions to match the grade format.
+    It then adds equivalent grades to the original list based on the matching format.
+    A deep copy of the input list is iterated over.
+    It checks grades aren't already in the list before adding them.
+    """
+    if not isinstance(grades, list):
+        raise TypeError(f'Expected list of strings of grades, got {type(grades)}')
+    gs = set(copy.deepcopy(grades))
+    for g in gs: # ensure don't end up in endless loop of adding grades to original list
+        if re.match(Vgrades_regex_pattern, g):
+            newgrades = V_to_font[g]
+            for ng in newgrades:
+                if ng not in grades:
+                    grades.append(ng)             
+        elif re.match(font_grades_regex_pattern, g):
+            newgrades = font_to_V[g]
+            for ng in newgrades:
+                if ng not in grades:
+                    grades.append(ng)             
+        else:
+            raise ValueError(f'Invalid grade format: {g}')         
+        return 0
 
 def get_grades_in_range(grade_range):
      """
@@ -187,6 +208,78 @@ def get_grades_in_range(grade_range):
           incl_grades = list(range(int(lower_grade), int(upper_grade)+1))
 
      return [f'V{grade}' for grade in incl_grades]
+
+def get_filtered_climbs(climbs_df, dict_select):
+    """
+    Filters climbs based on specified criteria. Returns filtered Dataframe.
+
+    Parameters:
+    climbs_df (pandas.DataFrame): A DataFrame containing climb data.
+    dict_select (dict): A dictionary containing the criteria for filtering climbs.
+        The keys should match climb_file_columns and the values are lists of acceptable values.
+
+    Returns:
+    pandas.DataFrame: A DataFrame containing the filtered climbs.
+        If no climbs matching the specified criteria are found, returns 0, and prints that no matching climbs found.
+    """
+    if not isinstance(dict_select, dict):
+        raise TypeError(f'Expected dict of climb criteria, got {type(dict_select)}')
+    if not all([x in climb_file_columns[1:] for x in dict_select]):
+        raise KeyError(f'Expected dict of climb criteria with keys {climb_file_columns[1:]}, got {dict_select.keys()}')
+    
+    # create dictionary not including hold, wall, skill criteria
+    info_dict = {k:v for k,v in dict_select.items() if k not in ['hold', 'wall', 'skill']}
+    info_keys = [*info_dict.keys()]
+
+    # INITIAL SORT NOT INCLUDING HOLD, WALL, SKILL COLUMNS
+    #groupby option
+    if len(info_dict)==0:
+        reduced_climbs_df = climbs_df
+    elif len(info_dict)==1:
+        gg = climbs_df.groupby(info_keys)
+        try:
+            reduced_climbs_df = pd.concat([gg.get_group((x,)) for x in info_dict[info_keys[0]]], axis = 0)
+        except KeyError:
+            print("KeyError - No climbs matching specified criteria of "+', '.join([f'{key}:{value}' for key, value in info_dict.items()]))
+            return 0
+        # separate case as itertools.product returns a tuple as eg ('f6b',), and group keys look like 'f6b' - won't evaluate as not in gg.groups.keys()
+        # in future version of pandas, when grouping with length-1 list-like you will need to pass a length-1 tuple to get_group, ie '(name,)'
+        # this seems a bit of an oversight...
+    else:
+        gg = climbs_df.groupby(info_keys)
+        try:
+            reduced_climbs_df = pd.concat([gg.get_group(x) for x in itertools.product(*info_dict.values()) if x in gg.groups.keys()])
+        except ValueError as e:
+            if str(e) != 'No objects to concatenate':
+                raise e
+            else:
+                print("No climbs matching specified criteria of "+', '.join([f'{key}:{value}' for key, value in info_dict.items()]))
+                return 0
+    #or my code option
+    # if len(info_dict)==0:
+    #     reduced_climbs_df = climbs_df
+    # else:
+    #     reduced_climbs_df = climbs_df.loc[(climbs_df[list(info_dict)].isin(info_dict)).all(axis=1)]
+    # if len(reduced_climbs_df)==0:
+    #     print("No climbs matching specified criteria of "+', '.join([f'{key}:{value}' for key, value in info_dict.items()]))
+    #     return 0
+
+    # SECOND SORT INCLUDING HOLD, WALL, SKILL TESTING
+    style_keys = [k for k in ['hold', 'wall', 'skill'] if k in dict_select.keys()]
+    cols = list(reduced_climbs_df.columns)
+    data, index = [], []
+    for row in reduced_climbs_df.itertuples(index=True): # execute apply function, quicker this way
+        row_dict = {f:v for f,v in zip(cols, row[1:])}
+        data.append((lambda row: 
+        not any(item not in row[col] for col in style_keys for item in dict_select[col]))(row_dict))# Check if any item in dict_select[col] is not in row[col] for any column in style_keys
+        index.append(row[0])
+    boolmask = pd.Series(data, index=index) # series as bool mask where rows = True if all hold, wall, skill criteria matched
+    if not boolmask.any():
+        print("No climbs matching specified criteria of "+', '.join([f'{key}:{value}' for key, value in info_dict.items()]))
+        return 0
+    else:
+        fully_reduced_df = reduced_climbs_df[boolmask]
+        return fully_reduced_df
 
 # ALTERING CLIMBS FILE
 def add_new_climb_to_file(filepath, newclimb_data):
@@ -551,6 +644,8 @@ def statistics_on_single_climb(attempts_filepath : str | os.PathLike, climbid : 
     latest_attempt = attempts_on_this_climbid['attempt_date'].max() # finds latest attempt date 
     sent_status = attempts_on_this_climbid['success'].any() # checks if success column has any trues for each climb_id 
     total_number_attempts = attempts_on_this_climbid.shape[0] # number of attempts
+    number_of_sends = attempts_on_this_climbid['success'].sum(skipna = True) # number of sends
+
     if sent_status:
         first_send = attempts_on_this_climbid[attempts_on_this_climbid['success'] == True]['attempt_date'].min() # first send date
         attempts_to_send = attempts_on_this_climbid[attempts_on_this_climbid['attempt_date'] <= first_send].shape[0] # number of attempts to send including sent attempt
@@ -567,6 +662,7 @@ def statistics_on_single_climb(attempts_filepath : str | os.PathLike, climbid : 
         'total_number_attempts': total_number_attempts,
         'first_send_date': first_send,
         'attempts_to_send': attempts_to_send,
+        'number_of_sends': number_of_sends,
     }
 
     agg_df = pd.DataFrame(aggregate_data, index = [climbid]) # creates dataframe with single row
@@ -609,10 +705,12 @@ def statistics_on_all_climbs(attempts_filepath: str | os.PathLike):
     first_attempts = attempts_grouped_climbid['attempt_date'].apply(lambda x: x.min()) # finds first attempt date for each climb_id group
     latest_attempts = attempts_grouped_climbid['attempt_date'].apply(lambda x: x.max()) # finds latest attempt date for each climb_id group
     sent_statuses = attempts_grouped_climbid['success'].apply(lambda x: x.any()) # checks if success column has any trues for each climb_id group
-    total_number_attempts = attempts_grouped_climbid.size()
-    first_sends = attempts_grouped_climbid.apply(lambda x: x[x["success"]==True]['attempt_date'].min() if x["success"].any() else None, include_groups=False)
-    attempts_to_send = attempts_grouped_climbid.apply(lambda x: x[x['attempt_date'] <= x[x['success']==True]['attempt_date'].min()].shape[0] if x['success'].any() else None, include_groups=False)
+    total_number_attempts = attempts_grouped_climbid.size() # returns size of group (ie total number of attempts) for each climb_id group
+    first_sends = attempts_grouped_climbid.apply(lambda x: x[x["success"]==True]['attempt_date'].min() if x["success"].any() else None, include_groups=False) # finds date of first True value for each climb_id group. if no True, sets None
+    attempts_to_send = attempts_grouped_climbid.apply(lambda x: x[x['attempt_date'] <= x[x['success']==True]['attempt_date'].min()].shape[0] if x['success'].any() else None, include_groups=False) # counts number of attempts before first True, including attempts on the same day before it. for each climb_id group
+    number_of_sends = attempts_grouped_climbid['success'].apply(lambda x: x.sum(skipna=True)) # counts number of Trues in success column for each climb_id group
     # what happens if there are null rows?
+    # nb: see initial_df_setup_testing.py file for development and comments on how these calculations work
 
     aggregate_data = {
         'first_attempt_date': first_attempts,
@@ -621,6 +719,7 @@ def statistics_on_all_climbs(attempts_filepath: str | os.PathLike):
         'total_number_attempts': total_number_attempts,
         'first_send_date': first_sends,
         'attempts_to_send': attempts_to_send,
+        'number_of_sends': number_of_sends,
     }
 
     agg_df = pd.DataFrame.from_dict(aggregate_data, orient = 'columns') # pd.DataFrame.from_dict() is slightly faster
@@ -629,3 +728,17 @@ def statistics_on_all_climbs(attempts_filepath: str | os.PathLike):
     # agg_df.set_index(list(attempts_grouped_climbid.groups.keys()), inplace = True)
     # agg_df.index.name  = 'climb_id'
     return agg_df
+
+
+def faster_df_apply(df, func):
+    """
+    This function applies a function to each row of a DataFrame and returns a Series.
+    A faster version of df.apply()
+    """
+    cols = list(df.columns)
+    data, index = [], []
+    for row in df.itertuples(index=True):
+        row_dict = {f:v for f,v in zip(cols, row[1:])}
+        data.append(func(row_dict))
+        index.append(row[0])
+    return pd.Series(data, index=index)

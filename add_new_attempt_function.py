@@ -4,6 +4,7 @@
 8/6/24
 #cwd = D:\\j_Documents\\cliimbing\\climbtracker
 # working and tested functions for adding to attempts data file
+# superseded by broomcupboard on 24/6/24
 """
 
 
@@ -356,5 +357,4 @@ def update_new_attempt_on_existing_climb(newattempt_data, attempts_filepath, agg
                     decimal='.')
     
     return 0
-
 

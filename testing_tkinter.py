@@ -10,6 +10,7 @@ from tkinter import messagebox
 import tkinter as tk
 import broomcupboard as bc
 import datetime as dt
+tcl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "theme", "forest-light.tcl")
 
 #%%
 # basic hello world message
@@ -504,3 +505,96 @@ submit_button_widget.grid(row=8, column=1)
 
 root.mainloop()
 
+#%% Testing switching between frames
+from tkinter import font as tkfont  # python 3
+
+class SampleApp(tk.Tk):
+
+    def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
+
+        self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
+
+        # the container is where we'll stack a bunch of frames
+        # on top of each other, then the one we want visible
+        # will be raised above the others
+        container = tk.Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        self.frames = {}
+        for F in (StartPage, PageOne, PageTwo):
+            page_name = F.__name__
+            frame = F(parent=container, controller=self)
+            # F is the loop variable. 
+            # The loop is iterating over a list of classes, so each time through the loop F will be representing a class. 
+            # F(...) creates an instance of the class. 
+            # These classes (StartPage, PageOne, PageTwo) all require two parameters: a widget that will be the parent of this class//
+            # and an object that will server as a controller (a term borrowed from the UI patter model/view/controller).
+            # The line of code creates an instance of the class (which itself is a subclass of a Frame widget)//
+            # and temporarily assigns the frame to the local variable frame.
+            # passing self as parameter means these new class instances can call methods in SampleApp class
+
+            self.frames[page_name] = frame
+            # can access page through dictionary self.frames
+
+            # put all of the pages in the same location;
+            # the one on the top of the stacking order
+            # will be the one that is visible.
+            frame.grid(row=0, column=0, sticky="nsew")
+
+        self.show_frame("StartPage")
+
+    def show_frame(self, page_name):
+        '''Show a frame for the given page name'''
+        # zorder
+        frame = self.frames[page_name]
+        frame.tkraise() # raises frame to the top of the stacking order
+        # each page is subclass of tk.Frame (StartPage, PageOne, PageTwo), so tk.Frame.__init__(self,parent) calls//
+        # constructor of parent class
+
+
+class StartPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="This is the start page", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=10)
+
+        button1 = tk.Button(self, text="Go to Page One",
+                            command=lambda: controller.show_frame("PageOne"))
+        button2 = tk.Button(self, text="Go to Page Two",
+                            command=lambda: controller.show_frame("PageTwo"))
+        button1.pack()
+        button2.pack()
+
+
+class PageOne(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="This is page 1", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=10)
+        button = tk.Button(self, text="Go to the start page",
+                           command=lambda: controller.show_frame("StartPage"))
+        button.pack()
+
+
+class PageTwo(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="This is page 2", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=10)
+        button = tk.Button(self, text="Go to the start page",
+                           command=lambda: controller.show_frame("StartPage"))
+        button.pack()
+
+
+if __name__ == "__main__":
+    app = SampleApp()
+    app.mainloop()
