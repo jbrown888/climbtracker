@@ -35,7 +35,8 @@ def add_new_attempt_to_file(filepath, newattempt_data):
 
     
     """
-    if type(newattempt_data) is not dict:
+    if not isinstance(newattempt_data, dict):
+
         raise TypeError(f'Expected dict of attempt data, got {type(newattempt_data)}')
     if not all([x in newattempt_data for x in attempt_file_columns]):
         raise KeyError(f'Expected dict of attempt data with keys {attempt_file_columns[1:]}, got {newattempt_data.keys()}')
