@@ -7,6 +7,7 @@
 # superseded by broomcupboard on 24/6/24
 """
 
+
 # appending climb_df file
 import datetime as dt
 import os
@@ -36,7 +37,6 @@ def add_new_attempt_to_file(filepath, newattempt_data):
     
     """
     if not isinstance(newattempt_data, dict):
-
         raise TypeError(f'Expected dict of attempt data, got {type(newattempt_data)}')
     if not all([x in newattempt_data for x in attempt_file_columns]):
         raise KeyError(f'Expected dict of attempt data with keys {attempt_file_columns[1:]}, got {newattempt_data.keys()}')
@@ -89,7 +89,7 @@ def add_new_attempts_to_file(filepath, newattempts_data, num_attempts):
     Realistically not that useful a function
     """
     
-    if type(newattempts_data) is not dict:
+    if not isinstance(newattempts_data, dict):
         raise TypeError(f'Expected dict of attempt data, got {type(newattempts_data)}')
     if not all([x in newattempts_data.keys() for x in attempt_file_columns]):
         raise KeyError(f'Expected dict of attempt data with keys {attempt_file_columns[1:]}, got {newattempts_data.keys()}')
@@ -148,15 +148,15 @@ def add_N_failed_attempts_on_one_climb_same_date(filepath, climb_id, attempt_dat
     Exception: If the file to write to does not end with a new line.
     """
 
-    if type(climb_id) is not int:
+    if not isinstance(climb_id, int):
         raise TypeError(f'Expected int for climb_id, got {type(climb_id)}')
-    if type(attempt_date) is not dt.date:
+    if not isinstance(attempt_date, dt.date):
         # NOTE! this may not be a good idea. Might be better to read in as isoformat string and compare to regex pattern
         # tying it into numpy datetime format might not be a great idea for transferability...
         raise TypeError(f'Expected dt.date for attempt_date, got {type(attempt_date)}')
     if attempt_date > dt.date.today():
         raise ValueError("Attempt date cannot be in the future.")
-    if type(num_attempts) is not int:
+    if not isinstance(num_attempts, int):
         raise TypeError(f'Expected int for num_attempts, got {type(num_attempts)}')
     if num_attempts < 1:
         raise ValueError(f'Expected num_attempts to be at least 1, got {num_attempts}')
@@ -210,15 +210,15 @@ def add_N_attempts_send_final_try_on_one_climb_same_date(filepath, climb_id, att
     Exception: If the file to write to does not end with a new line.
     """
 
-    if type(climb_id) is not int:
+    if not isinstance(climb_id, int):
         raise TypeError(f'Expected int for climb_id, got {type(climb_id)}')
-    if type(attempt_date) is not dt.date:
+    if not isinstance(attempt_date, dt.date):
         # NOTE! this may not be a good idea. Might be better to read in as isoformat string and compare to regex pattern
         # tying it into numpy datetime format might not be a great idea for transferability...
         raise TypeError(f'Expected dt.date for attempt_date, got {type(attempt_date)}')
     if attempt_date > dt.date.today():
         raise ValueError("Attempt date cannot be in the future.")
-    if type(num_attempts) is not int:
+    if not isinstance(num_attempts, int):
         raise TypeError(f'Expected int for num_attempts, got {type(num_attempts)}')
     if num_attempts < 1:
         raise ValueError(f'Expected num_attempts to be at least 1, got {num_attempts}')
@@ -280,8 +280,6 @@ def check_climb_id_exists(climbs_filepath, climb_id):
     return climb_id in climb_ids
 
 
-# NOTE: this function should not be used - it is bad practice to store aggregate/calculated data.
-# it should just be recalculated each time
 def update_new_attempt_on_existing_climb(newattempt_data, attempts_filepath, agg_data_filepath):
     """
     This function updates the aggregate data AND attempts data files for a new attempt on an existing climb.
@@ -301,7 +299,7 @@ def update_new_attempt_on_existing_climb(newattempt_data, attempts_filepath, agg
     TypeError: If the newattempt_data is not a dictionary.
     ValueError: If the newattempt_data dictionary does not contain all the required keys.
     """
-    if type(newattempt_data) is not dict:
+    if not isinstance(newattempt_data, dict):
         raise TypeError(f'Expected dict of attempt data, got {type(newattempt_data)}')
     if not all([x in newattempt_data.keys() for x in attempt_file_columns]):
         raise KeyError(f'Expected dict of attempt data with keys {attempt_file_columns[1:]}, got {newattempt_data.keys()}')
@@ -359,5 +357,4 @@ def update_new_attempt_on_existing_climb(newattempt_data, attempts_filepath, agg
                     decimal='.')
     
     return 0
-
 
