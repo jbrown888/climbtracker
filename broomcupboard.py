@@ -227,11 +227,11 @@ def get_filtered_climbs(climbs_df, dict_select):
     if not all([x in climb_file_columns[1:] for x in dict_select]):
         raise KeyError(f'Expected dict of climb criteria with keys {climb_file_columns[1:]}, got {dict_select.keys()}')
     
-    # create dictionary not including hold, wall, skill criteria
-    info_dict = {k:v for k,v in dict_select.items() if k not in ['hold', 'wall', 'skill']}
+    # create dictionary not including hold, wall, skill, notes criteria
+    info_dict = {k:v for k,v in dict_select.items() if k not in ['hold', 'wall', 'skill', 'notes']}
     info_keys = [*info_dict.keys()]
 
-    # INITIAL SORT NOT INCLUDING HOLD, WALL, SKILL COLUMNS
+    # INITIAL SORT NOT INCLUDING HOLD, WALL, SKILL, NOTES COLUMNS
     #groupby option
     if len(info_dict)==0:
         reduced_climbs_df = climbs_df
@@ -265,7 +265,7 @@ def get_filtered_climbs(climbs_df, dict_select):
     #     return 0
 
     # SECOND SORT INCLUDING HOLD, WALL, SKILL TESTING
-    style_keys = [k for k in ['hold', 'wall', 'skill'] if k in dict_select.keys()]
+    style_keys = [k for k in ['hold', 'wall', 'skill', 'notes'] if k in dict_select.keys()]
     cols = list(reduced_climbs_df.columns)
     data, index = [], []
     for row in reduced_climbs_df.itertuples(index=True): # execute apply function, quicker this way
@@ -282,56 +282,60 @@ def get_filtered_climbs(climbs_df, dict_select):
         return fully_reduced_df
 
 # ALTERING CLIMBS FILE
-def add_new_climb_to_file(filepath, newclimb_data):
-     """
-     This function adds a new climb as line of data to a CSV file.
+def add_new_climb_to_file(filepath, newclimb_data, returnclimbid = False):
+    """
+    This function adds a new climb as line of data to a CSV file.
 
-     Parameters:
-     filepath (str): The path to the CSV file where the new climb data will be appended.
-     newclimb_data (dict): A dictionary containing the new climb data. The keys should match the column names in the CSV file.
+    Parameters:
+    filepath (str): The path to the CSV file where the new climb data will be appended.
+    newclimb_data (dict): A dictionary containing the new climb data. The keys should match the column names in the CSV file.
+    returnclimbid (bool): If True, the function will return the new climb_id. Otherwise, it will return 0. Default False
 
-     Returns:
-     int: 0 if the function executes successfully, otherwise an error code.
+    Returns:
+    int: 0 if the function executes successfully, otherwise an error code.
 
-     Raises:
-     TypeError: If the newclimb_data is not a dictionary.
-     KeyError: If the newclimb_data dictionary does not contain all the required keys.
-     Exception: If the file does not end with a new line.
+    Raises:
+    TypeError: If the newclimb_data is not a dictionary.
+    KeyError: If the newclimb_data dictionary does not contain all the required keys.
+    Exception: If the file does not end with a new line.
 
-     Note:
-     The function reads the last line of the file to get the previous climb_id and increments it to generate the new climb_id.
-     The new climb data is then appended to the file using the csv.DictWriter.
-     """
-     if not isinstance(newclimb_data, dict):
-          raise TypeError(f'Expected dict of climb data, got {type(newclimb_data)}')
-     if not all([x in newclimb_data for x in climb_file_columns[1:]]):
-          raise KeyError(f'Expected dict of climb data with keys {climb_file_columns[1:]}, got {newclimb_data.keys()}')
+    Note:
+    The function reads the last line of the file to get the previous climb_id and increments it to generate the new climb_id.
+    The new climb data is then appended to the file using the csv.DictWriter.
+    """
+    if not isinstance(newclimb_data, dict):
+        raise TypeError(f'Expected dict of climb data, got {type(newclimb_data)}')
+    if not all([x in newclimb_data for x in climb_file_columns[1:]]):
+        raise KeyError(f'Expected dict of climb data with keys {climb_file_columns[1:]}, got {newclimb_data.keys()}')
 
-     # get previous climb_id from last line of file
-     with open(filepath, 'rb') as f:
-          try:  # catch OSError in case of a one line file 
-               f.seek(-2, os.SEEK_END)
-               while f.read(1) != b'\n':
-                    f.seek(-2, os.SEEK_CUR)
-          except OSError:
-               f.seek(0)
-          last_line = f.readline().decode()
-     if last_line[:-2:-1] != '\n':
-          raise Exception(f'File {filepath} does not end with a new line.') # poorly formatted file
-     new_id = int(last_line.split(',')[0]) + 1
+    # get previous climb_id from last line of file
+    with open(filepath, 'rb') as f:
+        try:  # catch OSError in case of a one line file 
+            f.seek(-2, os.SEEK_END)
+            while f.read(1) != b'\n':
+                f.seek(-2, os.SEEK_CUR)
+        except OSError:
+            f.seek(0)
+        last_line = f.readline().decode()
+    if last_line[:-2:-1] != '\n':
+        raise Exception(f'File {filepath} does not end with a new line.') # poorly formatted file
+    new_id = int(last_line.split(',')[0]) + 1
 
-     newclimb_data.update({'climb_id': new_id}) # doesn't matter that this is added to the end of the dictionary
-     # since fieldnames param in dictwriter writerow sets order of keys to write into file
-     # append data to file
-     try:
-          with open(filepath, 'a', newline = '') as file:
-               dictwriter = csv.DictWriter(file, fieldnames=climb_file_columns, restval = '', extrasaction = 'raise')
-               dictwriter.writerow(newclimb_data)
-          print(f"New line appended successfully to {filepath}.")
-     except Exception as e:
-          print(f"Error appending new line to {filepath}: {str(e)}")
+    newclimb_data.update({'climb_id': new_id}) # doesn't matter that this is added to the end of the dictionary
+    # since fieldnames param in dictwriter writerow sets order of keys to write into file
+    # append data to file
+    try:
+        with open(filepath, 'a', newline = '') as file:
+            dictwriter = csv.DictWriter(file, fieldnames=climb_file_columns, restval = '', extrasaction = 'raise')
+            dictwriter.writerow(newclimb_data)
+        print(f"New line appended successfully to {filepath}.")
+    except Exception as e:
+        print(f"Error appending new line to {filepath}: {str(e)}")
 
-     return 0
+    if returnclimbid:
+        return new_id
+    else:
+        return 0
 
 
 # ATTEMPTS #########################################################################

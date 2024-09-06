@@ -56,6 +56,9 @@ paned.add(bottom_pane, weight=1)
 # Notebook
 top_notebook = ttk.Notebook(top_pane)
 
+display_dict = {}
+values_dict = {}
+
 #######
 # top tab : basic categories
 def sport_switch():
@@ -271,102 +274,91 @@ top_notebook.pack(expand=True, fill="both", padx=5, pady=5)
 
 ########
 # bottom pane - styles and notes
-
 frm = ttk.Frame(bottom_pane)
-frm.columnconfigure(index=0, weight=1)
-frm.columnconfigure(index=1, weight=1)
-frm.columnconfigure(index=2, weight=1)
+for j in range(3):
+    frm.columnconfigure(index = j, weight =1)
 for j in range(5):
     frm.rowconfigure(index = j, weight =1)
-# frm.rowconfigure(index=5, weight=1)
-# frm.rowconfigure(index=6, weight=1)
 # bottom_pane.add(frm, text="Notes and styles")
 
-# Holds entry
-# Create a Frame for the hold types
-holds_frame = ttk.LabelFrame(frm, text="Hold Types", padding=(20, 10))
-holds_frame.grid(row=0, column=0, padx=(20, 10), pady=10, sticky="nsew")
-holds_frame.columnconfigure(index=0, weight=1)
-holds_frame.columnconfigure(index=1, weight=1)
+# Create Labelframes for the hold, wall and skill types
+holdsfrm = ttk.LabelFrame(frm, text="Hold Types", padding=(20, 10))
+holdsfrm.grid(row=0, column=0, padx=(20, 10), pady=10, sticky="nsew")
+for j in range(2):
+    holdsfrm.columnconfigure(index = j, weight =1)
 for j in range(3):
-    holds_frame.rowconfigure(index = j, weight =1)
+    holdsfrm.rowconfigure(index = j, weight =1)
 
-holdbuttons = []
-nrows = 5
-holdstyles = []
+wallsfrm = ttk.LabelFrame(frm, text="Wall Types", padding=(20, 10))
+wallsfrm.grid(row=0, column=1, padx=(20, 10), pady=10, sticky="nsew")
+for j in range(2):
+    wallsfrm.columnconfigure(index = j, weight =1)
+for j in range(3):
+    wallsfrm.rowconfigure(index = j, weight =1)
 
-def select_holdstyle(x, y):
-    if y.get()==0:
+skillsfrm = ttk.LabelFrame(frm, text="Skill Types", padding=(20, 10))
+skillsfrm.grid(row=0, column=2, padx=(20, 10), pady=10, sticky="nsew")
+for j in range(3):
+    skillsfrm.columnconfigure(index = j, weight =1)
+for j in range(3):
+    skillsfrm.rowconfigure(index = j, weight =1)
+
+# update display_dict and values_dict with info for hold, wall, skill categories
+display_dict.update({('hold', 'frame'): holdsfrm,
+                ('wall', 'frame'): wallsfrm,
+                ('skill', 'frame'): skillsfrm,
+                })
+values_dict.update({('hold', 'dropdownvalues'): bc.holds,
+                    ('hold', 'keyname'): 'hold',
+                    ('wall', 'dropdownvalues'): bc.walls,
+                    ('wall', 'keyname'): 'wall',
+                    ('skill', 'dropdownvalues'): bc.skills,
+                    ('skill', 'keyname'): 'skill',
+                    })
+
+
+def select_style(x_var, y_onoff, z_keyname):
+    """
+    This function handles the selection of hold/wall/skill styles in the application. 
+    values_dict[(z_keyname, 'checkedstyles')] is a list of str of hold/wall/skill styles whose buttons have been checked
+    - ie list of hold/wall/skill styles to pass to selection_dict
+    
+    This function adds or removes styles from values_dict[(z_keyname, 'checkedstyles')] depending on if associated checkbutton is selected or not
+
+    Parameters:
+    x_var (tk.StringVar): The variable containing the value to add to values_dict[(z_keyname, 'checkedstyles')]
+    y_onoff (tk.IntVar): The variable indicating whether the button is selected (1) or not (0).
+    z_keyname (str): The key name (hold/wall/skill)
+
+    Returns:
+    None
+    """
+    # if button being turned off, i.e. onoff==0, set to off
+    if y_onoff.get()==0:
         try:
-            holdstyles.remove(x)
+            values_dict[(z_keyname, 'checkedstyles')].remove(x_var.get()) # delete key-value pair from checkedstyles list for z_keyname(hold/wall/skill)
         except KeyError:
             pass
     else:
-        holdstyles.append(x)
-    print(holdstyles)
+        # button being turned on, onoff==1
+        values_dict[(z_keyname, 'checkedstyles')].append(x_var.get()) # add key-value pair to checkedstyles list for z_keyname(hold/wall/skill)
+    # print(values_dict[(z_keyname, 'checkedstyles')])
 
-for i, hold_ in enumerate(bc.holds):
-    hold_var = tk.StringVar(value=hold_)
-    hold_onoff = tk.IntVar(value = 0)
-    holdbuttons.append(ttk.Checkbutton(holds_frame, text = hold_, variable = hold_onoff, offvalue =0, onvalue = 1, state = 'selected disabled', command=lambda x=hold_, y=hold_onoff: select_holdstyle(x, y)))
-    holdbuttons[i].grid(row=i%nrows, column=i//nrows, padx=5, pady=10, sticky="nsew")
 
-# Walls entry
-# Create a Frame for the wall types
-walls_frame = ttk.LabelFrame(frm, text="Wall Types", padding=(20, 10))
-walls_frame.grid(row=0, column=1, padx=(20, 10), pady=10, sticky="nsew")
-walls_frame.columnconfigure(index=0, weight=1)
-walls_frame.columnconfigure(index=1, weight=1)
-for j in range(3):
-    walls_frame.rowconfigure(index = j, weight =1)
-wallbuttons = []
-nrows = 5
-wallstyles = []
+# Create checkboxes for hold, wall and skill categories
+for k in ['hold', 'wall', 'skill']:
+    display_dict[(k, 'buttons')] = [] # initialise empty list to store checkbutton widgets in
+    nrows = 6 # number of rows to display - increase to reduce width of pane
+    values_dict[(k, 'checkedstyles')] = [] # initialise empty list to store str values of styles to select
+    values_dict[(k, 'buttons_onoff')] = [] # initialise empty list to store int values of button status selected (1) or not (0)
+    values_dict[(k, 'dropdown_stringvars')] = [] # initialise empty list to store str values of style - eg hold = jug, crimp, volume etc.
 
-def select_wallstyle(x, y):
-    if y.get()==0:
-        try:
-            wallstyles.remove(x)
-        except KeyError:
-            pass
-    else:
-        wallstyles.append(x)
-    print(wallstyles)
-
-for i, wall_ in enumerate(bc.walls):
-    wall_var = tk.StringVar(value=wall_)
-    wall_onoff = tk.IntVar(value = 0)
-    wallbuttons.append(ttk.Checkbutton(walls_frame, text = wall_, variable = wall_onoff, offvalue =0, onvalue = 1, state = 'selected disabled', command=lambda x=wall_, y=wall_onoff: select_wallstyle(x, y)))
-    wallbuttons[i].grid(row=i%nrows, column=i//nrows, padx=5, pady=10, sticky="nsew")
-
-# Skills entry
-# Create a Frame for the skill types
-skills_frame = ttk.LabelFrame(frm, text="Skill Types", padding=(20, 10))
-skills_frame.grid(row=0, column=2, padx=(20, 10), pady=10, sticky="nsew")
-skills_frame.columnconfigure(index=0, weight=1)
-skills_frame.columnconfigure(index=1, weight=1)
-for j in range(3):
-    skills_frame.rowconfigure(index = j, weight =1)
-
-skillbuttons = []
-nrows = 4
-skillstyles = []
-
-def select_skillstyle(x, y):
-    if y.get()==0:
-        try:
-            skillstyles.remove(x)
-        except KeyError:
-            pass
-    else:
-        skillstyles.append(x)
-    # print(skillstyles)
-
-for i, skill_ in enumerate(bc.skills):
-    skill_var = tk.StringVar(value=skill_)
-    skill_onoff = tk.IntVar(value = 0)
-    skillbuttons.append(ttk.Checkbutton(skills_frame, text = skill_, variable = skill_onoff, offvalue =0, onvalue = 1, state = 'selected disabled', command=lambda x=skill_, y=skill_onoff: select_skillstyle(x, y)))
-    skillbuttons[i].grid(row=i%nrows, column=i//nrows, padx=5, pady=10, sticky="nsew")
+    # iterate over all possible values of style
+    for i, ddv in enumerate(values_dict[((k, 'dropdownvalues'))]):
+        values_dict[(k, 'dropdown_stringvars')].append(tk.StringVar(value=ddv))
+        values_dict[(k, 'buttons_onoff')].append(tk.IntVar(value = 0))
+        display_dict[(k, 'buttons')].append(ttk.Checkbutton(display_dict[(k, 'frame')], text = ddv, variable = values_dict[(k, 'buttons_onoff')][i], offvalue =0, onvalue = 1, state = 'selected disabled', command=lambda x=values_dict[(k, 'dropdown_stringvars')][i], y=values_dict[(k, 'buttons_onoff')][i], z = values_dict[(k, 'keyname')]: select_style(x, y, z))) # create checkbutton
+        display_dict[(k, 'buttons')][i].grid(row=i%nrows, column=i//nrows, padx=2, pady=2, sticky="nsew")
 
 
 # Notes entry
@@ -379,9 +371,11 @@ new_label.grid(row=1, column=0, pady=10, columnspan=1)
 
 # Enter all details
 def get_info_holdwallskillnotes():
-    climb_data['hold'] = ', '.join(holdstyles)
-    climb_data['wall'] = ', '.join(wallstyles)
-    climb_data['skill'] = ', '.join(skillstyles)
+    for k in ['hold', 'wall', 'skill']:
+        if len(values_dict[(k, 'checkedstyles')]) != 0:
+            # self.controller.update_selection_dict(k, values_dict[(k, 'checkedstyles')]) # add key-value pair to selection_dict if any styles have been selected
+            # selection_dict[k] = ', '.join(values_dict[(k, 'checkedstyles')])
+            climb_data[k] = ', '.join(values_dict[(k, 'checkedstyles')])
     climb_data['notes'] = notes_var.get()
     print(climb_data)
 
