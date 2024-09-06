@@ -230,7 +230,7 @@ class SelectionPage(tk.Frame):
 
         # Panedwindow
         paned = ttk.PanedWindow(self)
-        paned.grid(row=0, column=0, pady=(10,20), sticky="nsew", rowspan=2)
+        paned.grid(row=0, column=0, pady=(5,10), sticky="nsew", rowspan=2)
         # pady adds padding (top, bottom) to widget in pixels
         # nsew makes it expand in n s e w directions
         # rowspan specifies paned widget should open 2 rows in root window
@@ -238,9 +238,12 @@ class SelectionPage(tk.Frame):
         # Add top pane
         top_pane = ttk.Frame(paned)
         paned.add(top_pane, weight=1)
+        # Add middle pane
+        middle_pane = ttk.Frame(paned)
+        paned.add(middle_pane, weight=1)
         # Add bottom pane
         bottom_pane = ttk.Frame(paned)
-        paned.add(bottom_pane, weight=1)
+        paned.add(bottom_pane, weight = 1)
 
         # Configure columns in topfrm
         topfrm = ttk.Frame(top_pane)
@@ -311,10 +314,13 @@ class SelectionPage(tk.Frame):
                         print(f'{g} is not a valid font, V or V range grade')
                     else:
                         self.controller.update_selection_dict(z_keyname, [x_var.get()]) # add key-value pair to selection_dict
+                elif z_keyname == 'notes':
+                    notes_as_list = [v.strip(' ') for v in x_var.get().split(',')]# split up str by commas and make list
+                    self.controller.update_selection_dict(z_keyname, notes_as_list) # add key-value pair to selection_dict
                 else:
                     self.controller.update_selection_dict(z_keyname, [x_var.get()]) # add key-value pair to selection_dict
 
-            # print(self.controller.selection_dict)
+            print(self.controller.selection_dict)
 
         # dictionary of information for display
         self.display_dict = {('grade', 'labeltext'): 'Grade :',
@@ -335,10 +341,11 @@ class SelectionPage(tk.Frame):
                         ('mbyear', 'row'):0,
                         ('door', 'row'):2,
                         ('climb_style', 'labeltext'): 'Climb Type :', 
-                        ('door', 'labeltext'): 'In/Out/MB',
+                        ('door', 'labeltext'): 'In/Out/MB :',
                         ('hold', 'labeltext'): 'Hold :',
                         ('wall', 'labeltext'): 'Wall :',
                         ('skill', 'labeltext'): 'Skill :',
+                        ('notes', 'labeltext'): 'Notes :',
                     }
 
         # Set parent frames for the different categories
@@ -413,9 +420,9 @@ class SelectionPage(tk.Frame):
         topfrm.pack(expand=True, fill="both", padx=5, pady=5) # pack and show topfrm and all children
 
         ###########
-        # bottom pane - styles and notes
-        # configure columns and rows in bottom pane frame
-        frm = ttk.Frame(bottom_pane)
+        # middle pane - styles and notes
+        # configure columns and rows in middle pane frame
+        frm = ttk.Frame(middle_pane)
         for j in range(3):
             frm.columnconfigure(index = j, weight =1)
         for j in range(5):
@@ -498,10 +505,35 @@ class SelectionPage(tk.Frame):
                 self.display_dict[(k, 'buttons')].append(ttk.Checkbutton(self.display_dict[(k, 'frame')], text = ddv, variable = values_dict[(k, 'buttons_onoff')][i], offvalue =0, onvalue = 1, state = 'selected disabled', command=lambda x=values_dict[(k, 'dropdown_stringvars')][i], y=values_dict[(k, 'buttons_onoff')][i], z = values_dict[(k, 'keyname')]: select_style(x, y, z))) # create checkbutton
                 self.display_dict[(k, 'buttons')][i].grid(row=i%nrows, column=i//nrows, padx=2, pady=2, sticky="nsew")
 
+        frm.pack(expand=True, fill="both", padx=5, pady=5) # pack and display middle frame and all children
 
-        # Search Climbs button - get information from selection_dict
+        ###########
+        # bottom pane - notes and proceed buttom
+        # configure columns and rows in bottom pane frame
+        bottomfrm = ttk.Frame(bottom_pane)
+        for j in range(3):
+            bottomfrm.columnconfigure(index = j, weight =1)
+        for j in range(2):
+            bottomfrm.rowconfigure(index = j, weight =1)
+
+        # Create Labelframes for the notes box
+        notesfrm = ttk.LabelFrame(bottomfrm, text="Notes", padding=(20, 10))
+        notesfrm.grid(row=0, column=0, padx=(20, 10), pady=10, sticky="nsew")
+        for j in range(2):
+            notesfrm.columnconfigure(index = j, weight =1)
+        notesfrm.rowconfigure(index = 0, weight =1)
+
+        # Notes entry
+        values_dict[('notes', 'keyname')] = 'notes'
+        values_dict[('notes', 'var')] = tk.StringVar() # variable containing str to add as value to selection_dict
+        values_dict[('notes', 'onoff')] = tk.IntVar(value=0) # variable storing whethere associated checkbutton is selected (1) or not (0)
+        self.display_dict[('notes', 'entrywidget')] = ttk.Entry(notesfrm, textvariable=values_dict[('notes', 'var')]) # notes entry box
+        self.display_dict[('notes', 'entrywidget')].grid(row=0, column = 0)
+        self.display_dict[('notes', 'checkbuttonwidget')] = ttk.Checkbutton(notesfrm, variable = values_dict[('notes', 'onoff')], offvalue =0, onvalue = 1, command=lambda x=values_dict[('notes', 'var')], y=values_dict[('notes', 'onoff')], z = values_dict[('notes', 'keyname')]: select_category(x, y, z)) # checkbutton widget
+        self.display_dict[('notes', 'checkbuttonwidget')].grid(row=0, column=1, padx=5, pady=5, sticky="nsew") # set position
+
+        # Search Climbs button - get information from selection_dict and proceed
         def get_info():
-
             # Update selection_dict with selected styles for hold/wall/skill categories
             for k in ['hold', 'wall', 'skill']:
                 if len(values_dict[(k, 'checkedstyles')]) != 0:
@@ -511,10 +543,10 @@ class SelectionPage(tk.Frame):
             self.controller.show_frame("DisplayPage") # move to DisplayPage
 
         # Create button for finalising selection_dict and moving to next page
-        enterinfo_button_widget = tk.Button(frm, text="Search corresponding climbs", command = get_info)
-        enterinfo_button_widget.grid(row=4, column=1)
+        enterinfo_button_widget = tk.Button(bottomfrm, text="Search corresponding climbs", command = get_info)
+        enterinfo_button_widget.grid(row=0, column=2)
 
-        frm.pack(expand=True, fill="both", padx=5, pady=5) # pack and display bottom frame and all children
+        bottomfrm.pack(expand=True, fill="both", padx=5, pady=5) # pack and display bottom frame and all children
 
         # Sizegrip
         sizegrip = ttk.Sizegrip(self)
@@ -570,14 +602,14 @@ class DisplayPage(tk.Frame):
         # Create a pane for extra buttons/filters to move between frames or recalculate
         pane2 = ttk.Frame(paned)
         paned.add(pane2, weight =1)
-        button = tk.Button(pane2, text="Go back",
+        goback_button = tk.Button(pane2, text="Go back",
                            command=lambda: self.controller.show_frame("SelectionPage")) # go back to SelectionPage button
-        button2 = tk.Button(pane2, text="Exit",
-                           command=lambda: self.controller.destroy()) # destroy and exit button
-        button3 = tk.Button(pane2, text = "Show climbs", command= lambda: self.show_climbs()) # show and recalculate climbs button
-        button.pack(side="left")
-        button2.pack(side="right")
-        button3.pack(side="bottom")
+        exit_button = tk.Button(pane2, text="Exit",
+                           command=lambda: self.controller.destroy()) # destroy and exit button - exit everything
+        showclimbs_button = tk.Button(pane2, text = "Show climbs", command= lambda: self.show_climbs()) # show and recalculate climbs button
+        goback_button.pack(side="left")
+        exit_button.pack(side="right")
+        showclimbs_button.pack(side="bottom")
         pane2.pack() 
 
         ##### Treeview #####
@@ -598,6 +630,13 @@ class DisplayPage(tk.Frame):
         self.treeview.heading("#1", text = 'climb_id', anchor = "w") # adds climb_id as first column
         self.treeview.column("#1", stretch=True, width = 120, anchor = "w")
         
+        def selectclimbid(a):
+            curItem = self.treeview.focus()
+            self.selectedclimbid = self.treeview.item(curItem)['values'][0]
+            # print(self.treeview.item(curItem))
+            # print(self.treeview.item(curItem)['values'][0])
+            # print(self.selectedclimbid, type(self.selectedclimbid))
+        self.treeview.bind('<ButtonRelease-1>', selectclimbid)        
 
     def show_climbs(self):
         """
@@ -652,8 +691,6 @@ class DisplayPage(tk.Frame):
         bc.append_equivalent_grades(self.controller.selection_dict['grade'])
         # recalculate display climbs
         self.show_climbs()
-
-
 
 if __name__ == "__main__":
     app = MultiFrameRoot()
