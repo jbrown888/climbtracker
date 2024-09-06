@@ -57,9 +57,10 @@ agg_df = bc.statistics_on_all_climbs(attempts_fpath)
 dict_select = {
                 'climb_style': ['bouldering'],
                 # 'grade': ['V5-7', 'V2-4'],
-                'location': ['Rockover'],
-                # 'door': ['outdoor'],
+                # 'location': ['Rockover'],
+                'door': ['indoor'],
                 # 'wall': ['overhang']
+                # 'skill': ['dyno'],
                }
 
 # for g in dict_select['grades']:
@@ -222,7 +223,7 @@ leg.get_frame().set_facecolor('w')
 # ax.set_xlim([-.01, 5])
 # ax.set_ylim([0, 80])
 ax.set_title('Attempts till send by grade over time', fontsize = 12)
-# %%
+
 #%%
 # graph for number of attempts to send for each grade over time, averaged over each week
 
@@ -378,7 +379,7 @@ plt.show()
 # get grade indexs
 reduced_df = pd.merge(reduced_agg_df, reduced_climbs_df['grade'], how = 'inner', on='climb_id', validate = "1:1")
 df_grouped_grades = reduced_df.groupby(['grade'])
-grade = 'V4-6'
+grade = 'V3-5'
 one_grade_data = df_grouped_grades.get_group(grade)
 grouped_by_date = one_grade_data.groupby(pd.Grouper(key = 'first_attempt_date', freq = 'MS', sort = True, label = 'left'))
 
