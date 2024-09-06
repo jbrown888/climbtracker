@@ -28,11 +28,11 @@ climbs_df = pd.read_csv(climbs_fpath, header=0,\
 
 dict_select = {
                 # 'climb_style': ['bouldering'],
-                'grade': ['V5-7'],
+                'grade': ['V2-4'],
                 'location': ['Rockover'],
                 # 'door': ['moonboard'],
                 'wall': ['overhang'],
-                'hold': ['clown']
+                # 'hold': ['clown']
                }
 
 info_dict = {k:v for k,v in dict_select.items() if k not in ['hold', 'wall', 'skill']}
