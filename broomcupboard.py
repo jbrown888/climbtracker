@@ -28,13 +28,13 @@ locations = [] # any string eg 'Rockover', 'Summit Up', 'Curbar Edge', 'Devils G
 ropes = ['lead', 'toprope', 'autobelay', 'trad']
 ropes_str = ['Lead', 'Top-rope', 'Auto-belay', 'Trad']
 climb_names = [] # any string, may include numbers
-angles = ['25deg', '40deg'] # integers, for moonboard angles
+angles = ['25deg', '40deg', '45deg', '50deg'] # integers, for moonboard angles
 mbyears = ['2016', '2017', '2019', '2024'] # moonboard year - 4digit str 0000
 holds = ['compression', 'crimp', 'crack', 'features', 'jug', 'pinch', 'pocket', 'sidepull', 'sloper', 'undercling', 'volume', 'chip', 'pebble', 'slope chip', 'edge']
-walls = ['arete', 'barrel', 'chimney', 'corner', 'overhang', 'roof', 'slab', 'step', 'topout', 'traverse', 'vert']
+walls = ['arete', 'barrel', 'chimney', 'corner', 'overhang', 'roof', 'slab', 'step', 'topout', 'traverse', 'vert', 'sitstart', 'highball']
 # skills = ['dyno', 'finger', 'power', 'reachy', 'sustained', 'technical', 'balance', 'co-ordination', 'paddle', 'tension','footwork', 'lock-off', ]
-skills = ['rockover', 'footwork', 'dyno', 'endurance', 'balance', 'tension', 'technical', 'body positioning', 'paddle', 'lock-off', 'power', 'finger', 'mantle', 'sustained', 'topout', 'co-ordination', 'pogo', 'drop knee', 'reachy', 'heel hook', 'high foot', 'reachy', 'knee bar', 'toe hook', 'foot switch', 'compression', 'deadpoint', 'thumbpress', 'arm', 'mobility', 'fear']
-rock_types = ['limestone', 'granite', 'sandstone', 'gritstone']
+skills = ['rockover', 'footwork', 'dyno', 'endurance', 'balance', 'tension', 'technical', 'body positioning', 'paddle', 'lock-off', 'power', 'finger', 'mantle', 'sustained', 'topout', 'co-ordination', 'pogo', 'drop knee', 'reachy', 'heel hook', 'high foot', 'layback', 'knee bar', 'toe hook', 'foot switch', 'compression', 'deadpoint', 'thumbpress', 'arm', 'mobility', 'fear', 'gaston', 'heel cam', 'bat hang', 'campus']
+rock_types = ['limestone', 'granite', 'sandstone', 'gritstone', 'acid tuff']
 
 
 # https://pythex.org/
