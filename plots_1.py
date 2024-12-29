@@ -15,6 +15,7 @@ import datetime as dt
 import os
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.ticker as mpl_ticker
 import matplotlib.cm as cm
 import figures_ as ff
 import broomcupboard as bc
@@ -50,14 +51,13 @@ climbs_df.drop(index = climbs_with_no_attempts,inplace = True) # drops unused in
 
 agg_df = bc.statistics_on_all_climbs(attempts_fpath)
 
-
 #%% 
 # see selecting_climbs.py for options for selection and speeds
 
 dict_select = {
                 'climb_style': ['bouldering'],
                 # 'grade': ['V5-7', 'V2-4'],
-                # 'location': ['Rockover'],
+                # 'location': ['Albarracin'],
                 'door': ['indoor'],
                 # 'wall': ['overhang']
                 # 'skill': ['dyno'],
@@ -228,7 +228,7 @@ ax.set_title('Attempts till send by grade over time', fontsize = 12)
 # graph for number of attempts to send for each grade over time, averaged over each week
 
 # get grade indexs
-reduced_df = pd.merge(reduced_agg_df, reduced_climbs_df['grade'], how = 'inner', on='climb_id', validate = "1:1")
+# reduced_df = pd.merge(reduced_agg_df, reduced_climbs_df['grade'], how = 'inner', on='climb_id', validate = "1:1")
 df_grouped_grades = reduced_df.groupby(['grade'])
 # grade_groups_indexs = [x for x in df_grouped_grades.groups.values()] # returns indexs of each grade group
 grades = [k for k in df_grouped_grades.groups.keys()]
@@ -305,7 +305,7 @@ total_failures = total_attempts  - total_sends
 total_sends_no_repeats = df_grouped_grades['sent_status'].sum()
 # if sent_status is True, number_of_fails_without_repeats = attempts_to_send - 1. 
 # if sent_status is False, number_of_attempts_without_repeats = total_number_of_attempts.
-total_failures_no_repeats = np.empty(num_grades, dtype =np.int64)
+total_failures_no_repeats = np.empty(num_grades)#, dtype =np.int64)
 for i in range(num_grades):
     g = df_grouped_grades.get_group((grades[i],))
     total_failures_no_repeats[i] = g.apply(lambda row: row['attempts_to_send'] - 1 if row['sent_status'] else row['total_number_attempts'], axis=1).sum()
@@ -314,25 +314,46 @@ climbattempts = {
     "Attempts": total_failures_no_repeats,
     "Sends": total_sends_no_repeats,
 }
-width = 0.5
 
-ff.infile_figparams_vscode['labelsize'] = 14
-ff.infile_figparams_vscode['ticksize'] = 8
+width = 0.45
+colors = ['darkgray','darkgreen']
+# ff.infile_figparams_vscode['labelsize'] = 14
+# ff.infile_figparams_vscode['ticksize'] = 10
+# ff.infile_figparams_vscode['tickvisible'] = False
 ff.infile_figparams_vscode['visible'] = False
+
 fig, ax = plt.subplots(figsize = (10,6))
 ff.standard_axes_settings(ax)
+
+# side by side bars with pandas support
+plot_df = pd.DataFrame(climbattempts)
+ax = plot_df.plot(ax = ax, kind='bar', rot=0, xlabel='Grade', ylabel='Attempts', title='Number of Attempts', color = {key: colors[i] for i, key in enumerate(climbattempts.keys())}, subplots = False, zorder = 2)
+
+ax.grid(visible=True, which='major', axis='y', c='grey', ls='--')
+ax.tick_params(axis ='x', which = 'both', direction ='in', length = 0, width = 0, labelsize = ff.infile_figparams_vscode['ticksize'])
 ax.set_xlabel('Grade')
 ax.set_ylabel('Attempts')
-bottom = np.zeros(num_grades)
+# stacked bars
+# bottom = np.zeros(num_grades)
+# for labelname, climbattempt in climbattempts.items():
+#     p = ax.bar(grades, climbattempt, width, label=labelname, bottom=bottom)
+#     bottom += climbattempt
 
-for boolean, climbattempt in climbattempts.items():
-    p = ax.bar(grades, climbattempt, width, label=boolean, bottom=bottom)
-    bottom += climbattempt
+#side by side bars
+# x = np.arange(len(grades))
+# i=0
+# for attribute, numberof in climbattempts.items():
+#     p = ax.bar(x + (width*i), numberof, width, label=attribute, bottom=np.zeros(num_grades), color = colors[i], zorder =2)
+#     i+=1
+# ax.set_xticks(x + width/2, grades)
+# ax.set_xticklabels(grades, ha='center')
+
 
 ax.set_title("Number of attempts")
 ax.legend(loc="upper right")
 
 plt.show()
+
 
 #%%
 # bar chart of number of climbs tried vs number sent - 
@@ -352,25 +373,51 @@ climbattempts = {
     "Attempted": total_not_sent_climbs,
     "Sent": total_sent_climbs,
 }
-width = 0.5
 
-ff.infile_figparams_vscode['labelsize'] = 14
-ff.infile_figparams_vscode['ticksize'] = 8
+width = 0.45
+colors = ['darkgray','darkgreen']
+# ff.infile_figparams_vscode['labelsize'] = 14
+# ff.infile_figparams_vscode['ticksize'] = 10
+# ff.infile_figparams_vscode['tickvisible'] = False
 ff.infile_figparams_vscode['visible'] = False
+
 fig, ax = plt.subplots(figsize = (10,6))
 ff.standard_axes_settings(ax)
-ax.set_xlabel('Grade')
-ax.set_ylabel('Climbs')
-bottom = np.zeros(num_grades)
-colors = ['lightgray','darkgreen']
-i=0
-for text, climbattempt in climbattempts.items():
-    p = ax.bar(grades, climbattempt, width, label=text, bottom=bottom, color = colors[i])
-    bottom += climbattempt
-    i+=1
-ax.set_title("Number of climbs tried")
-ax.legend(loc="upper right")
 
+# side by side bars with pandas support
+plot_df = pd.DataFrame(climbattempts)
+ax = plot_df.plot(ax = ax, kind='bar', rot=0, xlabel='Grade', ylabel='Climbs', color = {key: colors[i] for i, key in enumerate(climbattempts.keys())}, subplots = False, zorder = 2)
+
+ax.grid(visible=True, which='major', axis='y', c='grey', ls='--')
+ax.tick_params(axis ='x', which = 'both', direction ='in', length = 0, width = 0, labelsize = ff.infile_figparams_vscode['ticksize'])
+ax.set_xlabel('Grade')
+ax.set_ylabel('Number of Climbs')
+# ax.yaxis.set_major_formatter("{x:.0f}")
+ax.yaxis.set_major_locator(mpl_ticker.MultipleLocator(1))
+
+bottom = np.zeros(num_grades)
+colors = ['darkgray','darkgreen']
+
+# stacked bars
+# i=0s
+# width = 0.5
+# for text, climbattempt in climbattempts.items():
+#     p = ax.bar(grades, climbattempt, width, label=text, bottom=bottom, color = colors[i])
+#     bottom += climbattempt
+#     i+=1
+
+
+# side by side bars
+# width = 0.25
+# x = np.arange(len(grades))
+# i=0
+# for attribute, numberof in climbattempts.items():
+#     p = ax.bar(x + (width*i), numberof, width, label=attribute, bottom=np.zeros(num_grades), color = colors[i])
+#     i+=1
+# ax.set_xticks(x + width/2, grades)
+
+# ax.set_title("Number of climbs tried")
+ax.legend(loc="upper right")
 plt.show()
 
 #%%
@@ -379,7 +426,7 @@ plt.show()
 # get grade indexs
 reduced_df = pd.merge(reduced_agg_df, reduced_climbs_df['grade'], how = 'inner', on='climb_id', validate = "1:1")
 df_grouped_grades = reduced_df.groupby(['grade'])
-grade = 'V3-5'
+grade = 'V5-7'
 one_grade_data = df_grouped_grades.get_group(grade)
 grouped_by_date = one_grade_data.groupby(pd.Grouper(key = 'first_attempt_date', freq = 'MS', sort = True, label = 'left'))
 
