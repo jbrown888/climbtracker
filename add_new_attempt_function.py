@@ -7,7 +7,6 @@
 # superseded by broomcupboard on 24/6/24
 """
 
-
 # appending climb_df file
 import datetime as dt
 import os
@@ -280,6 +279,8 @@ def check_climb_id_exists(climbs_filepath, climb_id):
     return climb_id in climb_ids
 
 
+# NOTE: this function should not be used - it is bad practice to store aggregate/calculated data.
+# it should just be recalculated each time
 def update_new_attempt_on_existing_climb(newattempt_data, attempts_filepath, agg_data_filepath):
     """
     This function updates the aggregate data AND attempts data files for a new attempt on an existing climb.
@@ -357,4 +358,5 @@ def update_new_attempt_on_existing_climb(newattempt_data, attempts_filepath, agg
                     decimal='.')
     
     return 0
+
 

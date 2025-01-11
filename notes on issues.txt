@@ -1,0 +1,15 @@
+issue to solve: 
+
+how to group grades?
+
+eg if want to look at sport and indoor grades, consider font equiv f6b(V4) and V3-5 equally?
+
+how to present the data?
+
+what about larger or smaller grade ranges? eg V2-5, VB-0?
+or 
+
+also need to sort in order of increasing grades
+
+allow comma separated multiple grades for filtering climbs 
+will need new code for sorting "A" OR "B" rather than "A" AND "B" as for holds/notes/skills etc

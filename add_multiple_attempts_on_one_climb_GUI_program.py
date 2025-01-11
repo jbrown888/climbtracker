@@ -37,7 +37,7 @@ frm = ttk.Frame(root, padding=40) # creates frame widget
 frm.grid()
 
 # Create text entry widget for defining date 
-default_date = '2024-07-16' #dt.date.today().isoformat()
+default_date = '2024-12-21' #dt.date.today().isoformat()
 date_var = tk.StringVar(value = default_date) # store str variable of date
 dateentry_widget = ttk.Entry(frm, textvariable=date_var) # date entry box
 dateentry_widget.grid(column =0, row = 0) # set position

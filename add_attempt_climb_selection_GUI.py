@@ -328,8 +328,8 @@ class AddAttemptPage(tk.Frame):
             frm.columnconfigure(index=1, weight=1)
         frm.grid()
 
-        # Create text entry widget for defining date 
-        default_date = '2024-09-05' #dt.date.today().isoformat()
+        # Create text entry widget for defining date
+        default_date = '2024-12-14' #dt.date.today().isoformat()
         self.date_var = tk.StringVar(value = default_date) # store str variable of date
         dateentry_widget = ttk.Entry(frm, textvariable=self.date_var) # date entry box
         dateentry_widget.grid(column =0, row = 0) # set position
@@ -1135,14 +1135,14 @@ class AddNewClimbPage(tk.Toplevel):
         top_notebook.add(tab_1, text="Indoor")
 
         # Grade entry
-        grade_var = tk.StringVar(value = 'V3')
+        grade_var = tk.StringVar(value = 'V4-6')
         gradeentry_widget = ttk.Entry(tab_1, textvariable=grade_var) # location entry box
         gradeentry_widget.grid(row=0, column =1)
         gew_label = ttk.Label(tab_1, text="Grade :", justify="left")
         gew_label.grid(row=0, column=0, pady=10, columnspan=1)
 
         # Location entry
-        location_var = tk.StringVar(value = 'Rockover')
+        location_var = tk.StringVar(value = 'Font Borough')
         locationentry_widget = ttk.Entry(tab_1, textvariable=location_var) # location entry box
         locationentry_widget.grid(row=1, column =1)
         lew_label = ttk.Label(tab_1, text="Location :", justify="left")
@@ -1215,7 +1215,7 @@ class AddNewClimbPage(tk.Toplevel):
         gew_label_2.grid(row=1, column=0, pady=10, columnspan=1)
 
         # Location entry
-        location_var_2 = tk.StringVar(value = 'Rockover')
+        location_var_2 = tk.StringVar(value = 'Devils Gorge')
         locationentry_widget_2 = ttk.Entry(tab_2, textvariable=location_var_2) # location entry box
         locationentry_widget_2.grid(row=2, column =1)
         lew_label_2 = ttk.Label(tab_2, text="Location :", justify="left")
@@ -1224,7 +1224,7 @@ class AddNewClimbPage(tk.Toplevel):
         # Rock type
         rock_var_2 = tk.StringVar()
         rockbox_2 = ttk.Combobox(tab_2, textvariable= rock_var_2, values=bc.rock_types)
-        rockbox_2.current(0) # sets intial/default selection to 0 index of values list
+        rockbox_2.current(2) # sets intial/default selection to 0 index of values list
         rockbox_2.grid(row=3, column=1, padx=5, pady=10,  sticky="ew")
         rock_label_2 = ttk.Label(tab_2, text="Rock type :", justify="left")
         rock_label_2.grid(row=3, column=0, pady=10, columnspan=1)
@@ -1288,7 +1288,7 @@ class AddNewClimbPage(tk.Toplevel):
         gew_label_3.grid(row=1, column=0, pady=10, columnspan=1)
 
         # Location entry
-        location_var_3 = tk.StringVar(value = 'Rockover')
+        location_var_3 = tk.StringVar(value = 'Font Borough')
         locationentry_widget_3 = ttk.Entry(tab_3, textvariable=location_var_3) # location entry box
         locationentry_widget_3.grid(row=2, column =1)
         lew_label_3 = ttk.Label(tab_3, text="Location :", justify="left")
@@ -1297,15 +1297,15 @@ class AddNewClimbPage(tk.Toplevel):
         # Year option
         year_var_3 = tk.StringVar()
         yearbox_3 = ttk.Combobox(tab_3, textvariable=year_var_3, values= bc.mbyears)
-        yearbox_3.current(1) # sets intial/default selection to 0 index of values list
+        yearbox_3.current(3) # sets intial/default selection to 0 index of values list
         yearbox_3.grid(row=3, column=1, padx=5, pady=10,  sticky="ew")
         year_label_3 = ttk.Label(tab_3, text="Year :", justify="left")
         year_label_3.grid(row=3, column=0, pady=10, columnspan=1)
 
-        # Year option
+        # Angle option
         angle_var_3 = tk.StringVar()
         anglebox_3 = ttk.Combobox(tab_3, textvariable=angle_var_3, values= bc.angles)
-        anglebox_3.current(1) # sets intial/default selection to 0 index of values list
+        anglebox_3.current(3) # sets intial/default selection to 0 index of values list
         anglebox_3.grid(row=4, column=1, padx=5, pady=10,  sticky="ew")
         angle_label_3 = ttk.Label(tab_3, text="Angle :", justify="left")
         angle_label_3.grid(row=4, column=0, pady=10, columnspan=1)

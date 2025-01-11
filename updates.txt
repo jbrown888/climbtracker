@@ -1,0 +1,11 @@
+latest update 27/8/24
+
+- added notes into filtering for show_climbs GUI and add_attempt_climb_selection_GUI
+- updated broomcupboard get_filtered_climbs accordingly
+- it works!
+- also ensured it separates by comma like for hold/wall/skill :
+    i.e. "valley, blue" gets added to selection dict as ["valley", "blue"]
+    and it will search for climbs with "valley" AND "blue in notes
+
+
+    
